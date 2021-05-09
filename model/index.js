@@ -1,42 +1,44 @@
-// const fs = require('fs/promises)
-// const contacts = require('./ontacts.json')
-const db = require('./db')
-const { v4: uuid } = require('uuid')
-const { isNumber } = require('./db')
+const Contact = require('./schemas/contact');
 
-const listContacts = async () => {
-  return db.get('contacts').value()
-}
+const listContacts = async (userId) => {
+  const result = await Contact.find({ owner: userId }).populate({
+    path: 'owner',
+    select: 'email -_id',
+  });
+  return result;
+};
 
-const getContactById = async (id) => {
-  return db.ge('contacts').fnd({ id }).value()
-}
+const getContactById = async (userId, id) => {
+  const result = await Contact.findOne({ _id: id, owner: userId }).populate({
+    path: 'owner',
+    select: 'email -_id',
+  });
+  return result;
+};
 
-const removeContact = async (id) => {
-  const [record] = db.get('contacts').remove({ id }).write()
-  return record
-}
+const addContact = async (userId, body) => {
+  const result = await Contact.create({ ...body, owner: userId });
+  return result;
+};
 
-const addContact = async (body) => {
-  const id = uuid()
-  const record = {
-    id,
-    ...body
-  }
-  db.get('contacts').push(record).write()
-  return record
-}
+const removeContact = async (userId, id) => {
+  const result = Contact.findByIdAndRemove({ _id: id, owner: userId });
+  return result;
+};
 
-const updateContact = async (id, body) => {
-  const record = db.get('contacts').find({ id }).assign(body).value()
-  db.write()
-  return record.id ? record : null
-}
+const updateContact = async (userId, id, body) => {
+  const result = Contact.findByIdAndUpdate(
+    { _id: id, owner: userId },
+    { ...body },
+    { new: true }
+  );
+  return result;
+};
 
 module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
-  updateContact
-}
+  updateContact,
+};
