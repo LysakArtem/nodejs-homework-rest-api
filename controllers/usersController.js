@@ -7,7 +7,7 @@ const jimp = require('jimp');
 
 require('dotenv').config();
 const SECRET_KEY = process.env.JWT_SECRET;
-const reg = async (req, res, next) => {
+const registration = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await Users.findByEmail(email);
@@ -108,7 +108,7 @@ const saveUserAvatar = async (req) => {
 };
 
 module.exports = {
-  reg,
+  registration,
   login,
   logout,
   current,
